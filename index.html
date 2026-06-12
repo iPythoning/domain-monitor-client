@@ -690,6 +690,10 @@ document.getElementById('domainInput').addEventListener('keydown', (e) => {
 
 render();
 renderPro();
+
+// Counter beacon — invisible page view tracker for Auto Company analytics
+fetch('https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fipythoning.github.io%2Fdomain-monitor-client%2F', { mode: 'no-cors' });
 </script>
+<img src="https://hits.seeyoufarm.com/api/count/keep/badge.svg?url=https://ipythoning.github.io/domain-monitor-client/" style="display:none" alt="" />
 </body>
 </html>
