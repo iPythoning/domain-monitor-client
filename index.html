@@ -3,7 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Domain Monitor — 纯客户端域名监控</title>
+<title>Domain Monitor — Free Client-Side Domain & SSL Expiry Tracker (Zero Backend)</title>
+<meta name="description" content="Free, open-source domain and SSL certificate expiry monitor. Pure client-side — queries RDAP (modern WHOIS) and crt.sh directly from your browser. No server, no signup, no cost. Data stored in localStorage.">
+<meta name="keywords" content="domain monitor, SSL monitor, domain expiry, SSL expiry, RDAP, WHOIS, certificate transparency, free domain tool">
+<meta property="og:title" content="Domain Monitor — Free Client-Side Domain & SSL Expiry Tracker">
+<meta property="og:description" content="Track domain and SSL certificate expiry dates. Zero backend, zero cost, zero signup. One HTML file, works instantly.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ipythoning.github.io/domain-monitor-client/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Domain Monitor — Free Domain & SSL Expiry Tracker">
+<meta name="twitter:description" content="Zero-backend domain & SSL monitoring. One HTML file. Free forever.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Domain Monitor Client",
+  "description": "Free client-side domain and SSL certificate expiry monitoring tool using RDAP and Certificate Transparency.",
+  "url": "https://ipythoning.github.io/domain-monitor-client/",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
 <style>
 :root {
   --bg: #0a0a0f;
@@ -102,7 +123,11 @@ footer a { color: var(--accent); text-decoration: none; }
 
 <footer>
   数据存储于浏览器 localStorage · API: RDAP + crt.sh ·
-  <a href="https://github.com/iPythoning/domain-monitor" target="_blank">GitHub</a>
+  <a href="https://github.com/iPythoning/domain-monitor-client" target="_blank">GitHub</a>
+  <span style="margin: 0 0.5rem; color: var(--border);">|</span>
+  <a href="https://ipythoning.github.io/lien-deadlines/" target="_blank">Lien Deadlines</a>
+  <span style="margin: 0 0.5rem; color: var(--border);">|</span>
+  <a href="https://github.com/iPythoning?tab=repositories" target="_blank">More Tools</a>
 </footer>
 
 <script>
