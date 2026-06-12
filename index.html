@@ -691,9 +691,21 @@ document.getElementById('domainInput').addEventListener('keydown', (e) => {
 render();
 renderPro();
 
-// Counter beacon — invisible page view tracker for Auto Company analytics
-fetch('https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fipythoning.github.io%2Fdomain-monitor-client%2F', { mode: 'no-cors' });
 </script>
-<img src="https://hits.seeyoufarm.com/api/count/keep/badge.svg?url=https://ipythoning.github.io/domain-monitor-client/" style="display:none" alt="" />
+
+<!-- Privacy-friendly hit beacon: no cookies, no PII, no third-party account.
+     Closes the GitHub-Pages measurement blind spot (repo traffic API does not
+     count Pages hits). `live` = every page load; `from-github` = arrivals whose
+     referrer is a github.com link. -->
+<script>
+(function(){
+  if(location.hostname!=='ipythoning.github.io')return;
+  var ns='domain-monitor-ipy';
+  function hit(k){new Image().src='https://abacus.jasoncameron.dev/hit/'+ns+'/'+k+'?_='+Date.now();}
+  hit('live');
+  try{if(/(^|\.)github\.com$/i.test(new URL(document.referrer).hostname))hit('from-github');}catch(e){}
+})();
+</script>
+
 </body>
 </html>
