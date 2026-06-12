@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Domain Monitor — 纯客户端域名监控</title>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #141420;
+  --surface2: #1c1c30;
+  --border: #2a2a40;
+  --text: #e0e0eb;
+  --text2: #8888a0;
+  --accent: #6c5ce7;
+  --danger: #e74c3c;
+  --warn: #f39c12;
+  --ok: #2ecc71;
+  --radius: 12px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
+.container { max-width: 800px; margin: 0 auto; padding: 2rem 1rem; }
+header { text-align: center; padding: 3rem 0 2rem; }
+h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; background: linear-gradient(135deg, #a78bfa, #6c5ce7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.subtitle { color: var(--text2); margin-top: 0.5rem; font-size: 0.95rem; }
+
+.add-bar { display: flex; gap: 0.75rem; margin-bottom: 2rem; }
+.add-bar input { flex: 1; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); font-size: 1rem; outline: none; transition: border-color 0.2s; }
+.add-bar input:focus { border-color: var(--accent); }
+.add-bar button { padding: 0.75rem 1.5rem; background: var(--accent); color: white; border: none; border-radius: var(--radius); cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: transform 0.15s, opacity 0.15s; }
+.add-bar button:hover { transform: translateY(-1px); opacity: 0.9; }
+.add-bar button:active { transform: translateY(0); }
+
+.toolbar { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.toolbar button { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text2); cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+.toolbar button:hover { border-color: var(--accent); color: var(--text); }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.75rem; margin-bottom: 2rem; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; text-align: center; }
+.stat-value { font-size: 1.5rem; font-weight: 700; }
+.stat-label { font-size: 0.8rem; color: var(--text2); margin-top: 0.25rem; }
+.stat-ok .stat-value { color: var(--ok); }
+.stat-warn .stat-value { color: var(--warn); }
+.stat-danger .stat-value { color: var(--danger); }
+
+.domain-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.domain-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; transition: border-color 0.2s; position: relative; }
+.domain-card:hover { border-color: var(--accent); }
+.domain-card.checking { opacity: 0.7; }
+.domain-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+.domain-name { font-weight: 700; font-size: 1.1rem; font-family: 'SF Mono', 'Fira Code', monospace; }
+.domain-actions { display: flex; gap: 0.25rem; }
+.domain-actions button { background: none; border: none; color: var(--text2); cursor: pointer; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.85rem; transition: all 0.15s; }
+.domain-actions button:hover { color: var(--danger); background: rgba(231, 76, 60, 0.1); }
+
+.domain-info { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.9rem; }
+.info-item { display: flex; flex-direction: column; gap: 0.15rem; }
+.info-label { color: var(--text2); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.info-value { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; }
+
+.badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+.badge-ok { background: rgba(46, 204, 113, 0.15); color: var(--ok); }
+.badge-warn { background: rgba(243, 156, 18, 0.15); color: var(--warn); }
+.badge-danger { background: rgba(231, 76, 60, 0.15); color: var(--danger); }
+.badge-unknown { background: rgba(136, 136, 160, 0.15); color: var(--text2); }
+
+.spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-state { text-align: center; padding: 4rem 1rem; color: var(--text2); }
+.empty-state p { margin-bottom: 1rem; }
+
+footer { text-align: center; padding: 2rem; color: var(--text2); font-size: 0.8rem; }
+footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Domain Monitor</h1>
+    <p class="subtitle">纯客户端域名 & SSL 证书过期监控 · 数据存本地 · 零后端</p>
+  </header>
+
+  <div class="add-bar">
+    <input type="text" id="domainInput" placeholder="输入域名，如 example.com" autocomplete="off">
+    <button onclick="addDomain()">添加监控</button>
+  </div>
+
+  <div class="toolbar">
+    <button onclick="checkAll()">🔄 全部刷新</button>
+    <button onclick="exportData()">📥 导出</button>
+    <button onclick="document.getElementById('importFile').click()">📤 导入</button>
+    <button onclick="addSampleDomains()">🧪 示例数据</button>
+    <button onclick="clearAll()">🗑️ 清空</button>
+  </div>
+  <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+
+  <div class="stats" id="stats"></div>
+  <div class="domain-list" id="domainList"></div>
+</div>
+
+<footer>
+  数据存储于浏览器 localStorage · API: RDAP + crt.sh ·
+  <a href="https://github.com/iPythoning/domain-monitor" target="_blank">GitHub</a>
+</footer>
+
+<script>
+const STORAGE_KEY = 'domain-monitor-domains';
+
+function loadDomains() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveDomains(domains) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(domains));
+}
+
+function addDomain() {
+  const input = document.getElementById('domainInput');
+  const raw = input.value.trim();
+  if (!raw) return;
+
+  const domains = raw.split(/[\s,]+/).map(s => s.trim().toLowerCase()).filter(Boolean);
+  const existing = loadDomains();
+  const added = [];
+
+  for (const d of domains) {
+    if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i.test(d)) continue;
+    if (existing.find(e => e.domain === d)) continue;
+    existing.push({ domain: d, addedAt: Date.now() });
+    added.push(d);
+  }
+
+  if (added.length) {
+    saveDomains(existing);
+    input.value = '';
+    render();
+    checkDomains(added);
+  }
+}
+
+function removeDomain(domain) {
+  const domains = loadDomains().filter(d => d.domain !== domain);
+  saveDomains(domains);
+  render();
+}
+
+function clearAll() {
+  if (!confirm('确认清空所有域名？')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  render();
+}
+
+function addSampleDomains() {
+  const samples = ['github.com', 'google.com', 'stackoverflow.com'];
+  const existing = loadDomains();
+  let added = [];
+  for (const d of samples) {
+    if (!existing.find(e => e.domain === d)) {
+      existing.push({ domain: d, addedAt: Date.now() });
+      added.push(d);
+    }
+  }
+  saveDomains(existing);
+  render();
+  if (added.length) checkDomains(added);
+}
+
+// RDAP WHOIS check
+async function checkRDAP(domain) {
+  const tld = domain.split('.').pop();
+  const rdapMap = {
+    com: 'https://rdap.verisign.com/com/v1/domain/',
+    net: 'https://rdap.verisign.com/net/v1/domain/',
+    org: 'https://rdap.publicinterestregistry.org/rdap/domain/',
+    io: 'https://rdap.nic.io/rdap/domain/',
+    ai: 'https://rdap.nic.ai/rdap/domain/',
+    dev: 'https://rdap.nic.google/rdap/domain/',
+    app: 'https://rdap.nic.google/rdap/domain/',
+    co: 'https://rdap.nic.co/rdap/domain/',
+    me: 'https://rdap.nic.me/rdap/domain/',
+    xyz: 'https://rdap.centralnic.com/xyz/domain/',
+    online: 'https://rdap.centralnic.com/online/domain/',
+    shop: 'https://rdap.centralnic.com/shop/domain/',
+    info: 'https://rdap.identitydigital.services/rdap/domain/',
+    biz: 'https://rdap.identitydigital.services/rdap/domain/',
+  };
+  const base = rdapMap[tld];
+  if (!base) return { error: `TLD .${tld} 不支持 RDAP（可手动添加）` };
+
+  const res = await fetch(base + domain, { signal: AbortSignal.timeout(10000) });
+  if (!res.ok) return { error: `RDAP 查询失败: HTTP ${res.status}` };
+  const data = await res.json();
+  const events = data.events || [];
+  const expiry = events.find(e => e.eventAction === 'expiration');
+  const reg = events.find(e => e.eventAction === 'registration');
+  const registrar = data.entities?.find(e => e.roles?.includes('registrar'));
+  return {
+    expiryDate: expiry?.eventDate || null,
+    registrationDate: reg?.eventDate || null,
+    registrar: registrar?.vcardArray?.[1]?.find(v => v[0] === 'fn')?.[3] || '未知',
+    status: data.status || [],
+  };
+}
+
+// crt.sh SSL cert check
+async function checkSSL(domain) {
+  try {
+    const res = await fetch(`https://crt.sh/?q=%25.${encodeURIComponent(domain)}&output=json&deduplicate=Y`, { signal: AbortSignal.timeout(15000) });
+    if (!res.ok) return { error: `crt.sh 查询失败: HTTP ${res.status}` };
+    const certs = await res.json();
+    if (!certs.length) return { error: '未找到 SSL 证书' };
+
+    const latest = certs.reduce((a, b) => (new Date(b.not_after) > new Date(a.not_after) ? b : a), certs[0]);
+    const issuer = latest.issuer_name?.match(/O=([^,]+)/)?.[1] || '未知';
+    return {
+      issuer,
+      notBefore: latest.not_before,
+      notAfter: latest.not_after,
+      totalCerts: certs.length,
+    };
+  } catch (e) {
+    return { error: e.message };
+  }
+}
+
+async function checkDomain(domain) {
+  const [whoisResult, sslResult] = await Promise.allSettled([
+    checkRDAP(domain),
+    checkSSL(domain),
+  ]);
+
+  const domains = loadDomains();
+  const idx = domains.findIndex(d => d.domain === domain);
+  if (idx === -1) return;
+
+  const whois = whoisResult.status === 'fulfilled' ? whoisResult.value : { error: whoisResult.reason?.message || '查询失败' };
+  const ssl = sslResult.status === 'fulfilled' ? sslResult.value : { error: sslResult.reason?.message || '查询失败' };
+
+  domains[idx] = {
+    ...domains[idx],
+    whois,
+    ssl,
+    checkedAt: Date.now(),
+  };
+  saveDomains(domains);
+  render();
+}
+
+async function checkDomains(domainList) {
+  render();
+  await Promise.all(domainList.map(checkDomain));
+}
+
+async function checkAll() {
+  const domains = loadDomains();
+  if (!domains.length) return;
+  await checkDomains(domains.map(d => d.domain));
+}
+
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  const diff = new Date(dateStr) - Date.now();
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
+function getStatusColor(days, thresholds = { danger: 30, warn: 60 }) {
+  if (days === null) return 'unknown';
+  if (days < 0) return 'danger';
+  if (days <= thresholds.danger) return 'danger';
+  if (days <= thresholds.warn) return 'warn';
+  return 'ok';
+}
+
+function getBadge(days, thresholds) {
+  const color = getStatusColor(days, thresholds);
+  const labels = { danger: '危险', warn: '警告', ok: '正常', unknown: '未知' };
+  const classes = { danger: 'badge-danger', warn: 'badge-warn', ok: 'badge-ok', unknown: 'badge-unknown' };
+  return `<span class="badge ${classes[color]}">${labels[color]}</span>`;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
+}
+
+function render() {
+  const domains = loadDomains();
+  const list = document.getElementById('domainList');
+  const stats = document.getElementById('stats');
+
+  if (!domains.length) {
+    list.innerHTML = '<div class="empty-state"><p>还没有添加域名</p><p>在上方输入域名开始监控</p></div>';
+    stats.innerHTML = '';
+    return;
+  }
+
+  let whoisOk = 0, whoisWarn = 0, whoisDanger = 0, sslOk = 0, sslWarn = 0, sslDanger = 0;
+  for (const d of domains) {
+    const wDays = d.whois?.expiryDate ? daysUntil(d.whois.expiryDate) : null;
+    const sDays = d.ssl?.notAfter ? daysUntil(d.ssl.notAfter) : null;
+    const w = getStatusColor(wDays);
+    const s = getStatusColor(sDays);
+    if (w === 'ok') whoisOk++;
+    else if (w === 'warn') whoisWarn++;
+    else if (w === 'danger') whoisDanger++;
+    if (s === 'ok') sslOk++;
+    else if (s === 'warn') sslWarn++;
+    else if (s === 'danger') sslDanger++;
+  }
+
+  stats.innerHTML = `
+    <div class="stat stat-ok"><div class="stat-value">${domains.length}</div><div class="stat-label">监控域名</div></div>
+    <div class="stat stat-ok"><div class="stat-value">${whoisOk}</div><div class="stat-label">WHOIS 正常</div></div>
+    <div class="stat stat-warn"><div class="stat-value">${whoisWarn}</div><div class="stat-label">WHOIS 警告</div></div>
+    <div class="stat stat-danger"><div class="stat-value">${whoisDanger}</div><div class="stat-label">WHOIS 危险</div></div>
+    <div class="stat stat-ok"><div class="stat-value">${sslOk}</div><div class="stat-label">SSL 正常</div></div>
+    <div class="stat stat-danger"><div class="stat-value">${sslDanger}</div><div class="stat-label">SSL 危险</div></div>
+  `;
+
+  list.innerHTML = domains.map(d => {
+    const checking = !d.checkedAt;
+    const wDays = d.whois?.expiryDate ? daysUntil(d.whois.expiryDate) : null;
+    const sDays = d.ssl?.notAfter ? daysUntil(d.ssl.notAfter) : null;
+    const whoisBadge = d.whois?.error
+      ? `<span class="badge badge-unknown">${d.whois.error.substring(0, 20)}</span>`
+      : getBadge(wDays, { danger: 30, warn: 60 });
+    const sslBadge = d.ssl?.error
+      ? `<span class="badge badge-unknown">${d.ssl.error.substring(0, 20)}</span>`
+      : getBadge(sDays, { danger: 14, warn: 30 });
+
+    return `
+      <div class="domain-card ${checking ? 'checking' : ''}">
+        <div class="domain-header">
+          <span class="domain-name">${d.domain} ${checking ? '<span class="spinner"></span>' : ''}</span>
+          <div class="domain-actions">
+            <button onclick="checkDomains(['${d.domain}'])" title="刷新">🔄</button>
+            <button onclick="removeDomain('${d.domain}')" title="删除">✕</button>
+          </div>
+        </div>
+        <div class="domain-info">
+          <div class="info-item">
+            <span class="info-label">🌐 域名过期 ${whoisBadge}</span>
+            <span class="info-value">${d.whois?.expiryDate ? formatDate(d.whois.expiryDate) + (wDays !== null ? ` (${wDays}天)` : '') : (d.whois?.error || '查询中…')}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">🔒 SSL 过期 ${sslBadge}</span>
+            <span class="info-value">${d.ssl?.notAfter ? formatDate(d.ssl.notAfter) + (sDays !== null ? ` (${sDays}天)` : '') : (d.ssl?.error || '查询中…')}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">🏢 注册商</span>
+            <span class="info-value">${d.whois?.registrar || '—'}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">🔐 SSL 签发者</span>
+            <span class="info-value">${d.ssl?.issuer || '—'}</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Auto-check uncached domains
+  const uncached = domains.filter(d => !d.checkedAt).map(d => d.domain);
+  if (uncached.length) checkDomains(uncached);
+}
+
+function exportData() {
+  const data = JSON.stringify(loadDomains(), null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `domain-monitor-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!Array.isArray(imported)) throw new Error('格式错误');
+      const existing = loadDomains();
+      const merged = [...existing];
+      for (const item of imported) {
+        if (!item.domain) continue;
+        if (!merged.find(m => m.domain === item.domain)) merged.push(item);
+      }
+      saveDomains(merged);
+      render();
+    } catch (err) {
+      alert('导入失败: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+document.getElementById('domainInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addDomain();
+});
+
+render();
+</script>
+</body>
+</html>
