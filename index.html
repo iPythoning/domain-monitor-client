@@ -12,7 +12,7 @@
 <meta property="og:url" content="https://ipythoning.github.io/domain-monitor-client/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Domain Monitor — Free Domain & SSL Expiry Tracker">
-<meta name="twitter:description" content="Zero-backend domain & SSL monitoring. One HTML file. Free forever.">
+<meta name="twitter:description" content="Zero-backend domain & SSL monitoring. One HTML file. Free + Pro ($5 batch check).">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -22,7 +22,10 @@
   "url": "https://ipythoning.github.io/domain-monitor-client/",
   "applicationCategory": "DeveloperApplication",
   "operatingSystem": "Any",
-  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  "offers": [
+    { "@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "USD" },
+    { "@type": "Offer", "name": "Pro", "price": "5", "priceCurrency": "USD", "description": "Batch domain monitoring + CSV export" }
+  ]
 }
 </script>
 <style>
@@ -94,6 +97,52 @@ h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; background: lin
 
 footer { text-align: center; padding: 2rem; color: var(--text2); font-size: 0.8rem; }
 footer a { color: var(--accent); text-decoration: none; }
+
+/* Pro Section */
+.pro-banner { background: linear-gradient(135deg, rgba(108,92,231,0.12), rgba(162,155,254,0.08)); border: 1px solid var(--accent); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+.pro-badge { background: var(--accent); color: white; padding: 0.2rem 0.7rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.pro-title { font-weight: 700; font-size: 1rem; }
+.pro-desc { color: var(--text2); font-size: 0.85rem; margin-top: 0.2rem; }
+.pro-cta { padding: 0.6rem 1.25rem; background: linear-gradient(135deg, #a78bfa, #6c5ce7); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: transform 0.15s, opacity 0.15s; }
+.pro-cta:hover { transform: translateY(-1px); opacity: 0.92; }
+.pro-unlocked { background: linear-gradient(135deg, rgba(46,204,113,0.12), rgba(46,204,113,0.06)); border-color: var(--ok); }
+
+.batch-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.5rem; }
+.batch-section h3 { font-size: 1rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+.batch-section textarea { width: 100%; height: 120px; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; resize: vertical; outline: none; }
+.batch-section textarea:focus { border-color: var(--accent); }
+.batch-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
+.batch-actions button { padding: 0.6rem 1.25rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: transform 0.15s; }
+.btn-primary { background: var(--accent); color: white; }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.batch-results { margin-top: 1rem; }
+.batch-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.batch-table th { text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--border); color: var(--text2); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.batch-table td { padding: 0.5rem; border-bottom: 1px solid var(--border); font-family: 'SF Mono', 'Fira Code', monospace; }
+
+/* Lock overlay */
+.pro-lock { filter: blur(3px); pointer-events: none; user-select: none; position: relative; opacity: 0.5; }
+.locked-section { position: relative; }
+.lock-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 1; }
+.lock-msg { text-align: center; background: var(--surface); border: 1px solid var(--accent); border-radius: var(--radius); padding: 1.5rem 2rem; }
+.lock-msg h3 { margin-bottom: 0.5rem; }
+.lock-msg p { color: var(--text2); font-size: 0.9rem; margin-bottom: 1rem; }
+
+/* Payment Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
+.modal-overlay.show { display: flex; }
+.modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; max-width: 420px; width: 90%; }
+.modal h3 { margin-bottom: 0.75rem; font-size: 1.1rem; }
+.modal p { color: var(--text2); font-size: 0.9rem; margin-bottom: 1rem; }
+.modal .price { font-size: 2rem; font-weight: 700; color: var(--accent); margin-bottom: 1.25rem; }
+.payment-options { display: flex; flex-direction: column; gap: 0.75rem; }
+.payment-btn { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface2); color: var(--text); cursor: pointer; text-decoration: none; font-size: 0.9rem; transition: border-color 0.2s; }
+.payment-btn:hover { border-color: var(--accent); }
+.unlock-input { display: flex; gap: 0.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+.unlock-input input { flex: 1; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 0.85rem; outline: none; }
+.unlock-input input:focus { border-color: var(--accent); }
+.unlock-input button { padding: 0.5rem 1rem; background: var(--ok); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+.modal-close { display: block; width: 100%; margin-top: 1rem; padding: 0.5rem; background: none; border: none; color: var(--text2); cursor: pointer; font-size: 0.85rem; }
 </style>
 </head>
 <body>
@@ -118,7 +167,66 @@ footer a { color: var(--accent); text-decoration: none; }
   <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
 
   <div class="stats" id="stats"></div>
+
+  <!-- Pro: Batch Monitor -->
+  <div id="proSection">
+    <div class="pro-banner" id="proBanner">
+      <div>
+        <div class="pro-title"><span class="pro-badge">PRO</span> Batch Domain Monitor</div>
+        <div class="pro-desc">一次检查 100 个域名 · CSV 导出 · 排序筛选</div>
+      </div>
+      <button class="pro-cta" onclick="openPaymentModal()">🔓 解锁 Pro ($5)</button>
+    </div>
+    <div class="locked-section">
+      <div class="lock-overlay" id="lockOverlay">
+        <div class="lock-msg">
+          <h3>🔒 Pro 功能</h3>
+          <p>批量域名监控支持一次粘贴 100 个域名<br/>CSV 导出 · 风险排序 · 快速筛选</p>
+          <button class="pro-cta" onclick="openPaymentModal()">解锁 Pro — 一次性 $5</button>
+        </div>
+      </div>
+      <div class="batch-section pro-lock">
+        <h3>📋 批量域名检查</h3>
+        <textarea id="batchInput" placeholder="每行一个域名，最多 100 个&#10;例如：&#10;example.com&#10;github.com&#10;google.com" disabled></textarea>
+        <div class="batch-actions">
+          <button class="btn-primary" disabled>🚀 一键检查全部</button>
+          <button class="btn-secondary" disabled>📥 导出 CSV</button>
+        </div>
+        <div class="batch-results" id="batchResults"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="domain-list" id="domainList"></div>
+</div>
+
+<!-- Payment Modal -->
+<div class="modal-overlay" id="paymentModal">
+  <div class="modal">
+    <h3>🔓 解锁 Domain Monitor Pro</h3>
+    <p>批量域名监控 + CSV 导出 + 优先风险排序</p>
+    <div class="price">$5 <span style="font-size:0.9rem;color:var(--text2);font-weight:400">一次性 · 永久有效</span></div>
+    <div class="payment-options">
+      <a class="payment-btn" href="https://ko-fi.com/ipythoning" target="_blank" onclick="trackPayment('kofi')">
+        <span style="font-size:1.3rem">☕</span> Ko-fi / Buy Me a Coffee
+      </a>
+      <div class="payment-btn" onclick="toggleCrypto()" style="cursor:pointer">
+        <span style="font-size:1.3rem">₿</span> USDC (Arbitrum) → 复制地址
+      </div>
+      <div id="cryptoAddr" style="display:none;padding:0.75rem;background:var(--bg);border-radius:8px;font-family:'SF Mono',monospace;font-size:0.75rem;word-break:break-all;margin-top:0.25rem">
+        0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045<br/>
+        <span style="color:var(--text2)">Arbitrum L2 · USDC</span>
+      </div>
+    </div>
+    <div class="unlock-input">
+      <input type="text" id="unlockCode" placeholder="输入解锁码" onkeydown="if(event.key==='Enter')unlockPro()">
+      <button onclick="unlockPro()">解锁</button>
+    </div>
+    <button class="payment-btn" onclick="honorUnlock()" style="justify-content:center;margin-top:0.75rem;border-color:var(--ok);color:var(--ok)">
+      ✅ 我已支付，立即解锁（Honor System）
+    </button>
+    <button class="modal-close" onclick="closePaymentModal()">稍后再说</button>
+  </div>
 </div>
 
 <footer>
@@ -132,6 +240,156 @@ footer a { color: var(--accent); text-decoration: none; }
 
 <script>
 const STORAGE_KEY = 'domain-monitor-domains';
+const PRO_KEY = 'domain-monitor-pro';
+
+// === Pro / Payment ===
+function isPro() { return localStorage.getItem(PRO_KEY) === '1'; }
+
+function openPaymentModal() { document.getElementById('paymentModal').classList.add('show'); }
+function closePaymentModal() { document.getElementById('paymentModal').classList.remove('show'); }
+function toggleCrypto() { const el = document.getElementById('cryptoAddr'); el.style.display = el.style.display === 'none' ? 'block' : 'none'; }
+function trackPayment(method) { console.log('Payment click:', method); }
+
+function unlockPro(code) {
+  const codes = ['PRO-DMC-2026', 'BATCH-MONITOR-PRO', 'DOMAIN-PRO-5'];
+  const input = code || document.getElementById('unlockCode').value.trim();
+  if (codes.includes(input.toUpperCase())) {
+    localStorage.setItem(PRO_KEY, '1');
+    document.getElementById('unlockCode').value = '';
+    closePaymentModal();
+    renderPro();
+  } else if (input) {
+    alert('解锁码无效。支付后请联系获取解锁码，或使用 Honor System。');
+  }
+}
+
+// Honor system: user clicks "I've Paid" after actual payment
+function honorUnlock() {
+  localStorage.setItem(PRO_KEY, '1');
+  closePaymentModal();
+  renderPro();
+}
+
+function renderPro() {
+  const pro = isPro();
+  const banner = document.getElementById('proBanner');
+  const overlay = document.getElementById('lockOverlay');
+  const batchSection = document.querySelector('.batch-section');
+  const textarea = document.getElementById('batchInput');
+  const btns = batchSection.querySelectorAll('button');
+
+  if (pro) {
+    banner.classList.add('pro-unlocked');
+    banner.querySelector('.pro-desc').textContent = '✅ Pro 已解锁 · 批量域名监控 + CSV 导出';
+    banner.querySelector('.pro-cta').textContent = '✅ Pro 已激活';
+    banner.querySelector('.pro-cta').style.background = 'var(--ok)';
+    banner.querySelector('.pro-cta').onclick = null;
+    overlay.style.display = 'none';
+    batchSection.classList.remove('pro-lock');
+    textarea.disabled = false;
+    btns.forEach(b => b.disabled = false);
+  }
+}
+
+// === Batch Domain Check (Pro) ===
+async function batchCheck() {
+  const raw = document.getElementById('batchInput').value.trim();
+  if (!raw) return;
+  const domains = raw.split(/[\n,;\s]+/).map(s => s.trim().toLowerCase()).filter(Boolean).filter(d => /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i.test(d));
+  if (domains.length > 100) { alert('最多 100 个域名'); return; }
+  if (!domains.length) { alert('未找到有效域名'); return; }
+
+  const results = document.getElementById('batchResults');
+  results.innerHTML = `<p style="color:var(--text2)">🔍 正在检查 ${domains.length} 个域名… <span class="spinner"></span></p>`;
+
+  const data = [];
+  const BATCH = 5;
+  for (let i = 0; i < domains.length; i += BATCH) {
+    const batch = domains.slice(i, i + BATCH);
+    const batchResults = await Promise.allSettled(batch.map(async d => {
+      const [w, s] = await Promise.allSettled([checkRDAP(d), checkSSL(d)]);
+      const whois = w.status === 'fulfilled' ? w.value : { error: w.reason?.message || 'fail' };
+      const ssl = s.status === 'fulfilled' ? s.value : { error: s.reason?.message || 'fail' };
+      const wDays = whois.expiryDate ? Math.ceil((new Date(whois.expiryDate) - Date.now()) / 86400000) : null;
+      const sDays = ssl.notAfter ? Math.ceil((new Date(ssl.notAfter) - Date.now()) / 86400000) : null;
+      return { domain: d, whois, ssl, wDays, sDays };
+    }));
+    data.push(...batchResults.filter(r => r.status === 'fulfilled').map(r => r.value));
+  }
+
+  // Sort: most urgent first
+  data.sort((a, b) => {
+    const aMin = Math.min(a.wDays ?? 9999, a.sDays ?? 9999);
+    const bMin = Math.min(b.wDays ?? 9999, b.sDays ?? 9999);
+    return aMin - bMin;
+  });
+
+  window._batchData = data;
+  results.innerHTML = `
+    <p style="color:var(--text2);margin-bottom:0.5rem">✅ ${data.length} 个域名检查完成</p>
+    <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem">
+      <button class="btn-secondary" onclick="exportBatchCSV()" style="padding:0.35rem 0.75rem;font-size:0.8rem">📥 CSV 导出</button>
+      <button class="btn-secondary" onclick="addAllToMonitor()" style="padding:0.35rem 0.75rem;font-size:0.8rem">➕ 全部添加监控</button>
+    </div>
+    <div style="max-height:400px;overflow-y:auto">
+    <table class="batch-table">
+      <thead><tr><th>域名</th><th>WHOIS 过期</th><th>SSL 过期</th><th>注册商</th><th>SSL 签发者</th></tr></thead>
+      <tbody>${data.map(d => {
+        const wBadge = d.wDays !== null ? (d.wDays < 0 ? '🔴' : d.wDays <= 30 ? '🔴' : d.wDays <= 60 ? '🟡' : '🟢') : '⚪';
+        const sBadge = d.sDays !== null ? (d.sDays < 0 ? '🔴' : d.sDays <= 14 ? '🔴' : d.sDays <= 30 ? '🟡' : '🟢') : '⚪';
+        return `<tr>
+          <td><strong>${d.domain}</strong></td>
+          <td>${wBadge} ${d.wDays !== null ? d.wDays+'天' : (d.whois?.error || '—')}</td>
+          <td>${sBadge} ${d.sDays !== null ? d.sDays+'天' : (d.ssl?.error || '—')}</td>
+          <td style="font-size:0.8rem">${d.whois?.registrar || '—'}</td>
+          <td style="font-size:0.8rem">${d.ssl?.issuer || '—'}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
+}
+
+function exportBatchCSV() {
+  const data = window._batchData;
+  if (!data || !data.length) return;
+  const header = 'Domain,WHOIS Expiry,WHOIS Days,SSL Expiry,SSL Days,Registrar,SSL Issuer';
+  const rows = data.map(d => [
+    d.domain,
+    d.whois?.expiryDate || (d.whois?.error || ''),
+    d.wDays ?? '',
+    d.ssl?.notAfter || (d.ssl?.error || ''),
+    d.sDays ?? '',
+    d.whois?.registrar || '',
+    d.ssl?.issuer || ''
+  ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `domain-batch-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function addAllToMonitor() {
+  const data = window._batchData;
+  if (!data || !data.length) return;
+  const existing = loadDomains();
+  let added = [];
+  for (const d of data) {
+    if (!existing.find(e => e.domain === d.domain)) {
+      existing.push({ domain: d.domain, addedAt: Date.now(), whois: d.whois, ssl: d.ssl, checkedAt: Date.now() });
+      added.push(d.domain);
+    }
+  }
+  if (added.length) {
+    saveDomains(existing);
+    render();
+  }
+  alert(`已添加 ${added.length} 个域名到监控列表`);
+}
+
+// === Existing Code ===
 
 function loadDomains() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
@@ -431,6 +689,7 @@ document.getElementById('domainInput').addEventListener('keydown', (e) => {
 });
 
 render();
+renderPro();
 </script>
 </body>
 </html>
